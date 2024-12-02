@@ -1,0 +1,83 @@
+ plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin"
+    id 'com.google.gms.google-services'
+}
+
+
+
+
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode', '2').toInteger()
+def flutterVersionName = localProperties.getProperty('flutter.versionName', '1.2.0')
+
+android {
+    namespace "com.dijany.mobile_pad_pa"
+    compileSdkVersion 34 // Mise à jour de la version SDK
+    ndkVersion "21.3.6528147" // Change this to your appropriate NDK version
+
+    signingConfigs {
+        release {
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+            storePassword keystoreProperties['storePassword']
+        }
+    }
+
+    defaultConfig {
+        applicationId "com.dijany.mobile_pad_pa"
+        minSdkVersion 21 // Change this to your appropriate minSdkVersion
+        targetSdkVersion 34 // Mise à jour de la version SDK cible
+        versionCode flutterVersionCode
+        versionName flutterVersionName
+        versionName "0.0.1"
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+flutter {
+    source '../..'
+}
+
+dependencies {
+    implementation 'androidx.multidex:multidex:2.0.1'
+    implementation platform('com.google.firebase:firebase-bom:28.4.1')
+    implementation 'com.google.firebase:firebase-messaging'
+}
+
+apply plugin: 'com.google.gms.google-services'
+
+// Ensure that processReleaseGoogleServices is completed before mapReleaseSourceSetPaths
+tasks.whenTaskAdded { task ->
+    if (task.name == 'mapReleaseSourceSetPaths') {
+        task.dependsOn 'processReleaseGoogleServices'
+    }
+}
